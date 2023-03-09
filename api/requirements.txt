@@ -1,0 +1,6 @@
+fastapi==0.88.0
+starlette==0.22.0
+uvicorn==0.20.0
+typing-extensions==4.5.0
+python-multipart==0.0.5
+tritonclient[all]==2.31.0
