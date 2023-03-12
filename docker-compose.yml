@@ -1,7 +1,7 @@
 version: '3.7'
 services:
 
-# things specific to fastapi
+  # things specific to fastapi
   api:
     build:
       context: ./api
@@ -15,34 +15,38 @@ services:
 
     depends_on:
       - triton_server
-# # things specific to triton server
+  
+  
+  # things specific to triton server
   triton_server:
-    image: nvcr.io/nvidia/tritonserver:23.02-py3
+    # image: nvcr.io/nvidia/tritonserver:23.02-py3
+    image: triton_server_dl:latest
     ports:
       - "8000:8000"
       - "8001:8001"
       - "8002:8002"
-    
-    
+
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      
+
     volumes:
+    # /models will be used as model-repository
       - ./models:/models
-    
+      - .:/workspace
+
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [gpu]        
+              capabilities: [ gpu ]
 
     ipc: host
+    # network_mode: host
     # run triton server in polling mode 
-    command: tritonserver --model-store=/models   --model-control-mode=poll --repository-poll-secs=3 
-  
-  
+    # command: tritonserver --model-store=/models   --model-control-mode=poll --repository-poll-secs=3
+    command: tritonserver --model-repository=/models  --model-control-mode=poll --repository-poll-secs=3  --log-verbose=1
   # app:
   #   build: .
   #   volumes:

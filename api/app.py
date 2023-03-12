@@ -1,8 +1,14 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import RedirectResponse
 from typing import List
 import os
 from pathlib import Path
+import yaml
+from typing import Optional, Union, List, Dict
+from pydantic import BaseModel
+from rich.console import Console
+from .utils import create_versioned_dir
+import subprocess
 # from tritonclient.grpc import InferenceServerClient
 # from tritonclient.grpc import DataType, ModelMetadata
 
@@ -22,7 +28,6 @@ tags_metadata = [
     },
 
 ]
-
 
 
 description = """
@@ -53,6 +58,12 @@ app = FastAPI(
 )
 
 
+# get default classes
+_CLASSES = list(yaml.load(open("classes.yml", 'r'), Loader=yaml.SafeLoader)['names'].values())
+
+
+
+
 @app.get("/")
 async def get_docs():
     return RedirectResponse(url="/docs")
@@ -63,16 +74,51 @@ async def get_docs():
 # ==========================================================================
 
 
-@app.post("/upload/", tags=['model'])
-async def upload_file_and_strings(file: UploadFile = File(...), class_names: List[str] = []):
 
-    # write the onnx file to disk
+# class UploadModel(BaseModel):
+#     file: UploadFile = File(...)
+#     class_names: Union[List[str], None] = _CLASSES
+
+
+
+@app.post("/upload/", tags=['model'])
+async def upload_file_and_strings(file: UploadFile = File(...), class_names: Union[List[str], None] = _CLASSES):
+
+    #🔵 check the temp. model directory, if model already exists, then delete it
+    _model_files = [k for k in Path("tmp").iterdir() if k.is_file()]
+    Console().log(f"{len(_model_files)} model files found in tmp directory, deleting them")
+    for _file in _model_files:
+        Path(_file).unlink()
+    
+    
+    #🔵 write the uploaded file to the temp. directory
     file_name = file.filename
-    with open(file_name, "wb") as f:
+    with open("tmp/"+file_name, "wb") as f:
         f.write(await file.read())
 
-    assert Path(file_name).exists(), "uploaded file not found"
+    #🔵 if model not saved to correct path then raise exception
+    if not Path("tmp/"+file_name).exists():
+        raise HTTPException(status_code=409, detail="uploaded file not found at expected location")
     
+    
+    #🔵 convert to onnx
+
+    result = subprocess.run(['python3', 'converter/yolov5/export.py' , f'--weights {Path("tmp/"+file_name).as_posix()}', '--dynamic',  '--include onnx'],  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    if result.returncode != 0:
+        raise HTTPException(status_code=404, detail="conversion to onnx failed, check your uploaded file")
+    
+    # rename the onnx file
+    _onnx_file = Path("tmp/"+file_name).parents[0] / Path("tmp/"+file_name).stem + ".onnx"
+    if not Path(_onnx_file).exists():
+        raise HTTPException(status_code=500, detail="onnx file cannot be copied to the model repository")
+    
+    
+    
+    
+    
+    # #🔵 version this model
+    # create_versioned_dir()
     
     
     # # upload model to triton server
@@ -93,4 +139,4 @@ async def upload_file_and_strings(file: UploadFile = File(...), class_names: Lis
     # client.load_model("densenet_onnx", "1", file_name, metadata=metadata)
 
     # Return a JSON response with the file name and list of strings
-    return {"file_name": file_name, "classes": class_names}
+    
