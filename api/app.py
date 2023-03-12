@@ -8,6 +8,7 @@ from typing import Optional, Union, List, Dict
 from pydantic import BaseModel
 from rich.console import Console
 from .utils import create_versioned_dir
+from shutil import copy2
 import subprocess
 # from tritonclient.grpc import InferenceServerClient
 # from tritonclient.grpc import DataType, ModelMetadata
@@ -101,24 +102,35 @@ async def upload_file_and_strings(file: UploadFile = File(...), class_names: Uni
         raise HTTPException(status_code=409, detail="uploaded file not found at expected location")
     
     
-    #🔵 convert to onnx
-
-    result = subprocess.run(['python3', 'converter/yolov5/export.py' , f'--weights {Path("tmp/"+file_name).as_posix()}', '--dynamic',  '--include onnx'],  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    if result.returncode != 0:
+    #🔵 wait for convert to onnx
+    Console().log(f"{Path('tmp/'+file_name).as_posix()} conversion to onnx started", style='red')
+    # result = subprocess.run(['python3', 'converter/yolov5/export.py' , f'--weights {Path("tmp/"+file_name).as_posix()}', '--dynamic',  '--include onnx'],  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.system(f"python3 ./converter/yolov5/export.py --weights {Path('tmp/'+file_name).as_posix()}  --dynamic  --include onnx")
+    _converted_file = Path('tmp/'+file_name).with_suffix('.onnx')
+    status = _converted_file.exists()
+    Console().log(f"💀\t onnx conversion status is : {status}")
+    if not status:
         raise HTTPException(status_code=404, detail="conversion to onnx failed, check your uploaded file")
     
-    # rename the onnx file
-    _onnx_file = Path("tmp/"+file_name).parents[0] / Path("tmp/"+file_name).stem + ".onnx"
-    if not Path(_onnx_file).exists():
-        raise HTTPException(status_code=500, detail="onnx file cannot be copied to the model repository")
+    #🔵 rename the currently converted onnx file to model.onnx
+    Path(_converted_file).rename(Path("tmp/model.onnx"))
+    if not Path("tmp/model.onnx").exists():
+        raise HTTPException(status_code=500, detail="model.onnx file not found in the tmp directory")
     
     
+    #🔵 check existing versions of yolov5 and create new versioned directory
+    # in which model will be saved
+    versioned_dir = create_versioned_dir("models/yolov5")
+    Console().log(f"[green]versioned directory created : [red]{versioned_dir}")
+    if not Path(versioned_dir).exists():
+        raise HTTPException(status_code=500, detail="versioned directory not found")
+    
+    #🔵 copy Path("tmp/model.onnx") to versioned_dir
+    copy2(Path("tmp/model.onnx").as_posix(), Path(versioned_dir))
+    if not Path(versioned_dir+"/model.onnx").exists():
+        raise HTTPException(status_code=500, detail="model.onnx file not pushed in the versioned directory")
     
     
-    
-    # #🔵 version this model
-    # create_versioned_dir()
     
     
     # # upload model to triton server

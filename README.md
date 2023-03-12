@@ -1,3 +1,9 @@
+- [Start Services](#start-services)
+- [Stop services](#stop-services)
+- [Flow Chart of the system](#flow-chart-of-the-system)
+- [⚡Triton server PORT details](#triton-server-port-details)
+- [Some useful requests](#some-useful-requests)
+- [☢️ Important](#️-important)
 
 # Start Services
 
@@ -27,4 +33,31 @@ make down
 |GRPC InferenceService|0.0.0.0:8001|
 |HTTPS Service|0.0.0.0:8000|
 |Metrics Service|0.0.0.0:8002|
+
+
+# Some useful requests
+
+ - [x] 🟩 Get **yolov5** model config:
+`<host>` is the url where the triton server is running
+`<version>` is the version of the model
+
+```bash
+curl --location --request GET 'http://<host>:8000/v2/models/yolov5/versions/<version>/config'
+```
+
+- [x] 🟩 Get **inference ready** models:
+`<host>` is the url where the triton server is running
+
+```bash
+curl --location --request POST 'http://<host>:8000/v2/repository/index' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "ready" : true
+}'
+```
+
+# ☢️ Important
+
+ - model version mode is set to latest 1 so only the latest model will be loaded
+ - ensemble model will use the latest version of the model for inference
 

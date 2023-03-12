@@ -1,6 +1,6 @@
 import os
 
-def create_versioned_dir(path):
+def create_versioned_dir(path)->str:
     '''
     checks if a numerically named subdir. exists inside the path given, if it exists then creates the next integer incremented sub-dir.
     else if no subdirs exist then creates a sub-dir named 1.
@@ -39,15 +39,25 @@ def create_versioned_dir(path):
                 │   └── model.onnx
                 └── config.pbtxt
     ```
-    
-    '''    
+    Return
+    -------
+    str
+        directory path of the newly created versioned directory
+    ''' 
+    return_path = None   
     if not os.path.exists(path):
         os.makedirs(path)
         os.makedirs(os.path.join(path, '1'))
+        return_path = os.path.join(path, '1')
     else:
         subdirs = [int(d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d)) and d.isnumeric()]
         if len(subdirs) == 0:
+            # if there is no numeric sub-dir then create a sub-dir named 1
             os.makedirs(os.path.join(path, '1'))
+            return_path = os.path.join(path, '1')
         else:
             new_dir = str(max(subdirs) + 1)
             os.makedirs(os.path.join(path, new_dir))
+            return_path = os.path.join(path, new_dir)
+    
+    return return_path
