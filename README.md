@@ -1,9 +1,20 @@
+- [How to clone](#how-to-clone)
 - [Start Services](#start-services)
 - [Stop services](#stop-services)
 - [Flow Chart of the system](#flow-chart-of-the-system)
 - [⚡Triton server PORT details](#triton-server-port-details)
 - [Some useful requests](#some-useful-requests)
 - [☢️ Important](#️-important)
+
+# How to clone
+
+☠️ Make sure that submodule is also cloned, otherwise do it manually `converter/yolov5`
+
+```bash
+git clone --recursive https://github.com/TalhaUsuf/yolov5-triton.git
+```
+
+
 
 # Start Services
 
