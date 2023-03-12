@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from rich.console import Console
 from .utils import create_versioned_dir
 from shutil import copy2
-import subprocess
+import tritonclient.http as httpclient
 # from tritonclient.grpc import InferenceServerClient
 # from tritonclient.grpc import DataType, ModelMetadata
 
@@ -125,30 +125,18 @@ async def upload_file_and_strings(file: UploadFile = File(...), class_names: Uni
     if not Path(versioned_dir).exists():
         raise HTTPException(status_code=500, detail="versioned directory not found")
     
-    #🔵 copy Path("tmp/model.onnx") to versioned_dir
+    #🔵 copy new onnx model to versioned_dir
     copy2(Path("tmp/model.onnx").as_posix(), Path(versioned_dir))
     if not Path(versioned_dir+"/model.onnx").exists():
         raise HTTPException(status_code=500, detail="model.onnx file not pushed in the versioned directory")
     
     
-    
-    
-    # # upload model to triton server
-    # client = InferenceServerClient(url="localhost:8001")
+    # make triton client
+    tritonclient = httpclient.InferenceServerClient(url="localhost:8000", verbose=True)
+    # check if server is live
+    _status = tritonclient.is_server_live()
+    if not _status:
+        raise HTTPException(status_code=500, detail="triton server is not live")
+    Console().log(f"Triton server status: {_status}", style="green")
 
-    # # Check the connection status
-    # client.is_server_live()
-    
-    # # model metadata for triton model registration
-    # metadata = ModelMetadata(
-    # name="densenet_onnx",
-    # version="1",
-    # inputs=[{"name": "data_0", "data_type": DataType.FLOAT32, "shape": [1, 3, 224, 224]}],
-    # outputs=[{"name": "fc6_1", "data_type": DataType.FLOAT32, "shape": [1, 1000, 1, 1]}]
-    # )
-    
-    # # Upload the model
-    # client.load_model("densenet_onnx", "1", file_name, metadata=metadata)
-
-    # Return a JSON response with the file name and list of strings
     
