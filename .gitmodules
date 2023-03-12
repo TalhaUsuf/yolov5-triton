@@ -1,0 +1,3 @@
+[submodule "converter/yolov5"]
+	path = converter/yolov5
+	url = git@github.com:TalhaUsuf/yolov5-original.git
