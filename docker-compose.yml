@@ -22,7 +22,7 @@ services:
   # things specific to triton server
   triton_server:
     # image: nvcr.io/nvidia/tritonserver:23.02-py3
-    image: triton_server_dl:latest
+    image: talhayousuf/triton_server_dl
     # ports:
     #   - "8000:8000"
     #   - "8001:8001"
@@ -47,74 +47,6 @@ services:
     ipc: host
     network_mode: host
     # run triton server in polling mode 
-    # command: tritonserver --model-store=/models   --model-control-mode=poll --repository-poll-secs=3
+    
     command: tritonserver --model-repository=/models  --model-control-mode=poll --repository-poll-secs=3  --log-verbose=1
-  # app:
-  #   build: .
-  #   volumes:
-  #     - .:/app
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - RAILS_ENV=development
-  #     - RACK_ENV=development
-  #     - PORT=3000
-  #   depends_on:
-  #     - db
-  # db:
-  #   image: postgres
-  #   volumes:
-  #     - ./data:/var/lib/postgresql/data
-  #   environment:
-  #     - POSTGRES_PASSWORD=postgres
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_DB=postgres
-  #   ports:
-  #     - "5432:5432"
-  #   command: postgres -c 'max_connections=100'
-  # redis:
-  #   image: redis
-  #   ports:
-  #     - "6379:6379"
-  #   command: redis-server --appendonly yes
-  # sidekiq:
-  #   build: .
-  #   volumes:
-  #     - .:/app
-  #   command: bundle exec sidekiq -C config/sidekiq.yml
-  #   depends_on:
-  #     - db
-  #     - redis
-  # mailcatcher:
-  #   image: schickling/mailcatcher
-  #   ports:
-  #     - "1080:1080"
-  #     - "1025:1025"
-  # elasticsearch:
-  #   image: elasticsearch:2.4.1
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  # kibana:
-  #   image: kibana:4.6.1
-  #   ports:
-  #     - "5601:5601"
-  #   depends_on:
-  #     - elasticsearch
-  # logstash:
-  #   image: logstash:2.4.0
-  #   volumes:
-  #     - ./logstash.conf:/etc/logstash/conf.d/logstash.conf
-  #   ports:
-  #     - "5000:5000"
-  #     - "5000:5000/udp"
-  #   depends_on:
-  #     - elasticsearch
-  #   command: logstash -f /etc/logstash/conf.d/logstash.conf
-  # fluentd:
-  #   image: fluent/fluentd:v0.12.29
-  #   volumes:
-  #     - ./fluent.conf:/fluentd/etc/fluent.conf
-  #   ports:
-  #     - "24224:24224"
-  #     - "
+  
