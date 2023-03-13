@@ -13,9 +13,12 @@
 
 ```bash
 git clone --recursive https://github.com/TalhaUsuf/yolov5-triton.git
+
+
+cd yolov5-triton
+
+git lfs pull
 ```
-
-
 
 # Start Services
 
