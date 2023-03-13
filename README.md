@@ -1,8 +1,8 @@
 - [How to clone](#how-to-clone)
 - [Start Services](#start-services)
 - [Stop services](#stop-services)
+- [Testing API](#testing-api)
 - [Perf\_analyzer 📈 results](#perf_analyzer--results)
-- [Flow Chart of the system](#flow-chart-of-the-system)
 - [⚡Triton server PORT details](#triton-server-port-details)
 - [Some useful requests](#some-useful-requests)
 - [☢️ Important](#️-important)
@@ -24,7 +24,7 @@ git clone --recursive https://github.com/TalhaUsuf/yolov5-triton.git
 
 
 ```bash
-make up
+docker-compose up -d  --build
 ```
 App will be running 🏃‍♂️on `http://localhost:8005/`
 
@@ -32,8 +32,20 @@ App will be running 🏃‍♂️on `http://localhost:8005/`
 # Stop services
 
 ```bash
-make down
+docker-compose down
 ```
+
+# Testing API
+
+**if following model is used for testing then class names don't need to be specified**
+ - `http://localhost:8005/`
+ - Sample Images:
+   - [test image 1](testing/people.jpg)
+   - [test image 2](testing/sd-fp16-two_smuggl-1-8004.png)
+ - Sample Model:
+   - [test model](testing/yolov5n.pt)
+
+
 
 # Perf_analyzer 📈 results
 
@@ -51,8 +63,6 @@ make down
 |  Yolo-detection-B2 |             1 |             25.8853 |          3685 |                       6090 |            123 |                   1313 |                  42735 |                    9961 |         13117 |         67164 |        108679 |        130117 |        149820 |
 
 
-
-# Flow Chart of the system
 
 
 

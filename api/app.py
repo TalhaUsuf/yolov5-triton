@@ -134,6 +134,7 @@ class detection_response(BaseModel):
     classes : List[str]
     conf : List[float]
     coordinates : List[List[float]]
+    detected_idx : List[int]
 
 
 
@@ -213,10 +214,6 @@ async def upload_image(image: UploadFile = File(...), classes: Union[List[str], 
 
 
     
-    
-    
-    
-    
     Console().log(f"classes : {classes}")
     
     
@@ -290,8 +287,9 @@ async def upload_image(image: UploadFile = File(...), classes: Union[List[str], 
         for *xyxy, conf, _cls in reversed(det):
             c = int(_cls)  # integer class
             # label = f'{names[c]} {conf:.2f}'
-            print(f"detected : {idx2classes[c]} with conf. {conf}, coordinates : {xyxy}")
-            _detclasses.append(idx2classes[c])
+            # print(f"detected : {idx2classes[c]} with conf. {conf}, coordinates : {xyxy}")
+            # _detclasses.append(idx2classes[c])
+            _detclasses.append(c)
             _conf.append(conf)
             _coordinates.append(list(map(float,xyxy)))
             # annotator.box_label(xyxy, label, color=colors(c, True))
@@ -303,7 +301,8 @@ async def upload_image(image: UploadFile = File(...), classes: Union[List[str], 
         }, "return.pkl")
         return {
             "detections" : len(_detclasses),
-            "classes" : _detclasses,
+            "classes" : classes,
+            "detected_idx" : _detclasses,
             "conf" : _conf,
             "coordinates" : _coordinates
         }
@@ -311,6 +310,7 @@ async def upload_image(image: UploadFile = File(...), classes: Union[List[str], 
         return {
             "detections" : 0,
             "classes" : [],
+            "detected_idx" : [],
             "conf" : [],
             "coordinates" : [[]]
         }
