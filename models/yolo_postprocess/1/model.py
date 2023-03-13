@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import json
 import io
-from rich.console import Console
+# from rich.console import Console
 import cv2
 from PIL import Image
 # Reference for pb_utils:
@@ -200,4 +200,4 @@ class TritonPythonModel:
         """upon model unloading, since for the task model is being loaded in polling mode so this function will
         cannot be called from request
         """
-        print('👉\tUnloading the yolo_postprocessing function')
+        print('Unloading the yolo_postprocessing function')

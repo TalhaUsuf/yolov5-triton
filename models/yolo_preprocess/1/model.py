@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import json
 import io
-from rich.console import Console
+# from rich.console import Console
 import cv2
 from PIL import Image
 # Reference for pb_utils:
@@ -188,7 +188,7 @@ class TritonPythonModel:
         Implementing `finalize` function is OPTIONAL. This function allows
         the model to perform any necessary clean ups before exit.
         """
-        print('👉\tUnloading the yolo_preprocess function')
+        print('Unloading the yolo_preprocess function')
         
         
     # def execute(self, requests):
