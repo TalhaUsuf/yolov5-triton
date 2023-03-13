@@ -207,7 +207,7 @@ async def upload_file_and_strings(file: UploadFile = File(...), class_names: Uni
 
 
 @app.post("/infer/", tags=['inferece'])
-def upload_image(image: UploadFile = File(...)):
+async def upload_image(image: UploadFile = File(...)):
 
 
     
@@ -224,7 +224,8 @@ def upload_image(image: UploadFile = File(...)):
         Path(file_name).unlink()
         
     with open(file_name, "wb") as f:
-        shutil.copyfileobj(image.file, f)
+        # shutil.copyfileobj(image.file, f)
+        f.write(await image.read())
         
     # raise exception if image not saved to correct path
     if not Path(file_name).exists():
