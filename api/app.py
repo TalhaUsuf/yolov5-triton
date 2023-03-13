@@ -22,7 +22,7 @@ import numpy as np
 
 try:
     triton_client = httpclient.InferenceServerClient(
-        url='localhost:8000/v2/models/yolo_ensemble', verbose=True)
+        url='localhost:8000', verbose=True)
 except Exception as e:
     raise HTTPException(status_code=500, detail="triton server is not live")
 
