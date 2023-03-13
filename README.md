@@ -1,6 +1,7 @@
 - [How to clone](#how-to-clone)
 - [Start Services](#start-services)
 - [Stop services](#stop-services)
+- [Perf\_analyzer 📈 results](#perf_analyzer--results)
 - [Flow Chart of the system](#flow-chart-of-the-system)
 - [⚡Triton server PORT details](#triton-server-port-details)
 - [Some useful requests](#some-useful-requests)
@@ -25,12 +26,31 @@ git clone --recursive https://github.com/TalhaUsuf/yolov5-triton.git
 ```bash
 make up
 ```
+App will be running 🏃‍♂️on `http://localhost:8005/`
+
 
 # Stop services
 
 ```bash
 make down
 ```
+
+# Perf_analyzer 📈 results
+
+ - [x] [yolo-postprocessing-B1](perf_analysis/yolo_postprocess_b1_perf.csv)
+ - [x] [yolo-postprocessing-B2](perf_analysis/yolo_postprocess_b2_perf.csv)
+ - [x] [yolov5-model-B1](perf_analysis/yolov5_b1_perf.csv)
+ - [x] [yolov5-model-B2](perf_analysis/yolov5_b2_perf.csv)
+
+
+|  ensemble-part  |   Concurrency |   Inferences/Second |   Client Send |   Network+Server Send/Recv |   Server Queue |   Server Compute Input |   Server Compute Infer |   Server Compute Output |   Client Recv |   p50 latency |   p90 latency |   p95 latency |   p99 latency |
+|---:|--------------:|--------------------:|--------------:|---------------------------:|---------------:|-----------------------:|-----------------------:|------------------------:|--------------:|--------------:|--------------:|--------------:|--------------:|
+|  Yolo-postprocess-B1 |             1 |              7.4983 |          3649 |                       4738 |            348 |                   1275 |                 122293 |                     182 |             7 |        143654 |        158760 |        163193 |        172620 |
+|  Yolo-postprocess-B2 |             1 |              6.7764 |          7379 |                      15042 |            358 |                   2204 |                 272046 |                    1183 |            10 |        310661 |        354668 |        357366 |        374222 |
+|  Yolo-detection-B1 |             1 |             20.8297 |          1642 |                       3318 |             91 |                    659 |                  34114 |                    1857 |          6253 |         38402 |        100416 |        101235 |        124060 |
+|  Yolo-detection-B2 |             1 |             25.8853 |          3685 |                       6090 |            123 |                   1313 |                  42735 |                    9961 |         13117 |         67164 |        108679 |        130117 |        149820 |
+
+
 
 # Flow Chart of the system
 

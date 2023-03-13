@@ -129,9 +129,11 @@ async def get_docs():
 
 
 
-# class UploadModel(BaseModel):
-#     file: UploadFile = File(...)
-#     class_names: Union[List[str], None] = _CLASSES
+class detection_response(BaseModel):
+    detections : int
+    classes : List[str]
+    conf : List[float]
+    coordinates : List[List[float]]
 
 
 
@@ -206,15 +208,15 @@ async def upload_file_and_strings(file: UploadFile = File(...), class_names: Uni
 
 
 
-@app.post("/infer/", tags=['inferece'])
-async def upload_image(image: UploadFile = File(...)):
+@app.post("/infer/", tags=['inferece'], response_model=detection_response)
+async def upload_image(image: UploadFile = File(...), classes: Union[List[str], None] = _CLASSES):
 
 
     
     
     
     
-    global classes
+    
     Console().log(f"classes : {classes}")
     
     
@@ -249,12 +251,9 @@ async def upload_image(image: UploadFile = File(...)):
 
     inputs.append(httpclient.InferInput(input_name, image_data.shape, "UINT8"))
     outputs.append(httpclient.InferRequestedOutput(output_name))
-
-    
-
-    
+    # set the input tensor
     inputs[0].set_data_from_numpy(image_data)
-    
+    # ⚡run inference
     results = triton_client.infer(model_name="yolo_ensemble",
                                 inputs=inputs,
                                 outputs=outputs)
@@ -262,41 +261,59 @@ async def upload_image(image: UploadFile = File(...)):
     
     output0_data = results.as_numpy(output_name)
     Console().log(f"⚡\t[red]after inference")
-    # import joblib
-    
-    # joblib.dump(output0_data, "ensemble_out.pkl")
-    # print(output0_data.shape)
     
     
     # # --------------------------------------------------------------------------
-    # #                        map detections to labels                        
+    # #                      MAP DETECTIONS TO CLASS LABELS
+    # needs to be done here since original image size is needed and postprocessing 
+    # model has no access to original image size 
     # # --------------------------------------------------------------------------
     
-    for i, det in enumerate(output0_data):
-        # im0 --> resized image
-        # im --> original image
-        det[:, :4] = scale_coords([640, 640], det[:, :4], sz).round()
-    # print(det)
+    import joblib
     
-    idx2classes = {k:v for k,v in enumerate(classes)}
-    # #annotate the image
-    _classes = []
-    _conf = []
-    _coordinates = []
-    for *xyxy, conf, _cls in reversed(det):
-        c = int(_cls)  # integer class
-        # label = f'{names[c]} {conf:.2f}'
-        print(f"detected : {c} with conf. {conf}, coordinates : {xyxy}")
-        _classes.append(c)
-        _conf.append(conf)
-        _coordinates.append(xyxy)
-        # annotator.box_label(xyxy, label, color=colors(c, True))
-    return {
-        "classes" : _classes,
-        "conf" : _conf,
-        "coordinates" : _coordinates
-    }
-
+    try:
+        for i, det in enumerate(output0_data):
+            # sz --> original image size
+            det[:, :4] = scale_coords([640, 640], det[:, :4], sz).round()
+        FLAG = True
+        Console().log(f"⚠️\t[red]Objects detected....")
+    except:
+        FLAG = False
+        Console().log(f"⚠️\t[red]No detection....")
+    
+    if FLAG:
+        idx2classes = {k:v for k,v in enumerate(classes)}
+        # #annotate the image
+        _detclasses = []
+        _conf = []
+        _coordinates = []
+        for *xyxy, conf, _cls in reversed(det):
+            c = int(_cls)  # integer class
+            # label = f'{names[c]} {conf:.2f}'
+            print(f"detected : {idx2classes[c]} with conf. {conf}, coordinates : {xyxy}")
+            _detclasses.append(idx2classes[c])
+            _conf.append(conf)
+            _coordinates.append(list(map(float,xyxy)))
+            # annotator.box_label(xyxy, label, color=colors(c, True))
+        
+        joblib.dump({
+            "classes" : _detclasses,
+            "conf" : _conf,
+            "coordinates" : _coordinates
+        }, "return.pkl")
+        return {
+            "detections" : len(_detclasses),
+            "classes" : _detclasses,
+            "conf" : _conf,
+            "coordinates" : _coordinates
+        }
+    else:
+        return {
+            "detections" : 0,
+            "classes" : [],
+            "conf" : [],
+            "coordinates" : [[]]
+        }
     
     
     

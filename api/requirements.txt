@@ -3,6 +3,7 @@ starlette==0.22.0
 uvicorn==0.20.0
 typing-extensions==4.5.0
 python-multipart==0.0.5
+joblib==1.2.0
 tritonclient[all]==2.31.0
 pyyaml==6.0
 # YOLOv5 requirements

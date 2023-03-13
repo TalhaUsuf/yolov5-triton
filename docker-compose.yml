@@ -8,8 +8,10 @@ services:
       dockerfile: Dockerfile
     image: api:latest
 
-    ports:
-      - "8005:8005"
+    # ports:
+    #   - "8005:8005"
+    ipc: host
+    network_mode: host
     volumes:
       - ./:/app
 
@@ -21,10 +23,10 @@ services:
   triton_server:
     # image: nvcr.io/nvidia/tritonserver:23.02-py3
     image: triton_server_dl:latest
-    ports:
-      - "8000:8000"
-      - "8001:8001"
-      - "8002:8002"
+    # ports:
+    #   - "8000:8000"
+    #   - "8001:8001"
+    #   - "8002:8002"
 
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
@@ -43,7 +45,7 @@ services:
               capabilities: [ gpu ]
 
     ipc: host
-    # network_mode: host
+    network_mode: host
     # run triton server in polling mode 
     # command: tritonserver --model-store=/models   --model-control-mode=poll --repository-poll-secs=3
     command: tritonserver --model-repository=/models  --model-control-mode=poll --repository-poll-secs=3  --log-verbose=1
